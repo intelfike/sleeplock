@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net"
 	"os"
 	"os/exec"
 	"time"
@@ -12,9 +15,11 @@ func main() {
 		cmd := exec.Command(os.Args[0], "--child")
 		cmd.Start()
 	} else {
+		go ExitWait()
 		for {
 			h := time.Now().Hour()
-			if 5 >= h || h >= 22 {
+			fmt.Println(h)
+			if 5 >= h || h >= 21 {
 				time.Sleep(9 * time.Minute)
 				cmd := exec.Command("notify-send", "あと１分で画面がロックされます。")
 				cmd.Start()
@@ -27,4 +32,17 @@ func main() {
 			}
 		}
 	}
+}
+
+func ExitWait() {
+	ln, err := net.Listen("tcp", "localhost:9000")
+	if err != nil {
+		log.Fatal(err)
+	}
+	conn, err := ln.Accept()
+	if err != nil {
+		log.Fatal(err)
+	}
+	conn.Close()
+	os.Exit(0)
 }
